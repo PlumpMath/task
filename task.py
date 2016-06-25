@@ -1,3 +1,4 @@
+from builtins import object
 #!/usr/bin/env python
 
 import abc
@@ -6,17 +7,16 @@ import traceback
 import types
 
 import event
+from future.utils import with_metaclass
 
 
-class Task(object):
+class Task(with_metaclass(abc.ABCMeta, object)):
     """
     Task object for continuous processing over time.
 
     :param args: positional arguments to be passed to :meth:`run` (optional)
     :param kwargs: keyword arguments to be passed to :meth:`run` (optional)
     """
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, *args, **kwargs):
         """
@@ -298,7 +298,7 @@ class Task(object):
                     delay = self._iterator.throw(self._exception_in_blocking)
                     self._exception_in_blocking = None
                 else:
-                    delay = self._iterator.next()
+                    delay = next(self._iterator)
                 if delay == self.unit:
                     self._unit_delayed = True
                     return
@@ -523,8 +523,7 @@ class TaskManager(object):
                         blocked.propagate_exception(e)
                     del task._blocked[:]
             tasks = self._get_pending()
-        self._tasks = filter(lambda task: task not in to_be_removed,
-                             self._tasks)
+        self._tasks = [task for task in self._tasks if task not in to_be_removed]
         self._running_count = running_count
 
     @property

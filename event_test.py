@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from builtins import object
+
 import pytest
 
 import event

@@ -10,19 +10,19 @@ original code is located at:
 http://www.emptypage.jp/notes/pyevent.html
 """
 
+from builtins import object
+
 
 class Event(object):
     """
     Event.
     """
 
-    __slots__ = ['__doc__']
-
     def __init__(self):
         """
         Create an event.
         """
-        pass
+        self.__slots__ = ['__doc__']
 
     def __get__(self, obj, objtype=None):
         if obj is None:
@@ -38,12 +38,11 @@ class EventProxy(object):
     Event proxy, administering event handlers and propagate events.
     """
 
-    __slots__ = ['_event', '_sender']
-
     def __init__(self, event, sender):
         """
         Create an event proxy.
         """
+        self.__slots__ = ['_event', '_sender']
         self._event = event
         self._sender = sender
 
@@ -92,11 +91,11 @@ class EventProxy(object):
         """
         handlers = self._get_handlers()
         if isinstance(handler, EventHandler):
-            handlers[:] = filter(lambda h: h is not handler, handlers)
+            handlers[:] = [h for h in handlers if h is not handler]
         else:
             # Note that bound method objects are not the same instances;
             # Do not use 'h.callable is not handler'
-            handlers[:] = filter(lambda h: h.callable != handler, handlers)
+            handlers[:] = [h for h in handlers if h.callable != handler]
         return self
 
     def fire(self, *args, **kwargs):
@@ -117,8 +116,9 @@ class EventProxy(object):
             foo.clicked(some_parameter, another_parameter)
         """
         handlers = self._get_handlers()
-        handlers[:] = filter(None, (handler(self._sender, *args, **kwargs) for
-                                    handler in handlers))
+        called_handlers = (
+            handler(self._sender, *args, **kwargs) for handler in handlers)
+        handlers[:] = [handler for handler in called_handlers if handler]
 
     def __iadd__(self, callable):
         """

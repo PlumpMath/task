@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from builtins import object
+
 import pytest
 
 import task
@@ -434,7 +436,7 @@ class TestFunctionTask(object):
                 self.done = True
                 yield task.unit
 
-        class ClassB:
+        class ClassB(object):
             done = False
 
             def do_task(self, task):
